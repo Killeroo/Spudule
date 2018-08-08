@@ -46,7 +46,7 @@ namespace Spudule
             // Setup embeds for each event
             var emoji = new Emoji(":loudspeaker:");
             foreach (var e in events) {
-                var num = MentionUtils.ParseUser("@" + e.Item2);
+                //var num = MentionUtils.ParseUser("@" + e.Item2);
                 // TODO: Trying to get user mention
                 embeds.Add(new EmbedBuilder()
                 .WithTitle($"{emoji} Reminder")
@@ -56,24 +56,26 @@ namespace Spudule
             // Setup hook
             hook = new DiscordWebhookClient(id, token);
             logger.Info("Discord Webhook created");
-
-            //TODO: Comment more of this 
+            
+            // Schedule events
             var registry = new Registry();
-            registry.Schedule(() =>
-            {
-                hook.SendMessageAsync("", false, new Embed[] { embeds[0] }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
-            }).ToRunNow().AndEvery(1).Minutes();
+            for (int i = 0; i < events.Count; i++) {
+                // Add event
+                registry.Schedule(() => {
+                    // Fire embed at hook
+                    var index = i;
+                    var e = embeds[i];
+                    hook.SendMessageAsync("", false, new Embed[] { e }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
+                    logger.Info($"Event fired: {events[i].Item1} {events[i].Item2} {events[i].Item3}");
 
+                }).ToRunEvery(1).Days().At(Convert.ToInt32(events[i].Item1.Split(':')[0]), Convert.ToInt32(events[i].Item1.Split(':')[1]));
+                logger.Debug($"Added event: {events[i].Item1} {events[i].Item2} {events[i].Item3}");
+            }
             JobManager.Initialize(registry);
+            logger.Info("Events scheduled");
 
-            //hook.SendMessageAsync("test test", false, new Embed[] { embed }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
-
+            logger.Info("Scheduler running. Press any key to quit... ");
             Console.ReadLine();
-            //while (true) {
-            //    hook.SendMessageAsync("test test", false, new Embed[] { embed }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
-                
-            //    Console.ReadLine();
-            //}
 
         }
 
