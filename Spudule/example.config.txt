@@ -1,0 +1,5 @@
+﻿token XFIoTQhlnmPpraZqG0xTm-mP_tcRBS83y8_asd7asd7as8d8asd
+id 34236545374575
+event 16:20 everyone "some message"
+event 23:00 killeroo "test"
+event 02:00 BloopShow "this is a test message"
