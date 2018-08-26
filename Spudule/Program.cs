@@ -1,20 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 using Discord;
 using Discord.Webhook;
 using FluentScheduler;
-using System.Linq;
-
-// Need:
-// Logging
-// Reading events & token from file
-
-//https://discord.foxbot.me/docs/api/Discord.Webhook.DiscordWebhookClient.html
-//https://github.com/fluentscheduler/FluentScheduler
 
 namespace Spudule
 {
@@ -46,11 +38,21 @@ namespace Spudule
             // Setup embeds for each event
             var emoji = new Emoji(":loudspeaker:");
             foreach (var e in events) {
-                //var num = MentionUtils.ParseUser("@" + e.Item2);
-                // TODO: Trying to get user mention
+                // Try get user name (TODO: Fix mentions)
+                ulong unum = 0;
+                string descText = "";
+                if (MentionUtils.TryParseUser(e.Item2, out unum)) {
+                    descText = MentionUtils.MentionUser(unum) + " - " + Format.Italics(e.Item3.Replace("\"", string.Empty));
+                } else {
+                    descText = Format.Bold(e.Item2) + " - " + Format.Italics(e.Item3.Replace("\"", string.Empty));
+                }
+
+                // Construct embed
                 embeds.Add(new EmbedBuilder()
                 .WithTitle($"{emoji} Reminder")
-                .WithDescription($" {e.Item3}").Build());
+                .WithDescription(descText)
+                .WithTimestamp(DateTime.UtcNow)
+                .WithColor(Color.DarkOrange).Build());
             }
 
             // Setup hook
@@ -60,13 +62,12 @@ namespace Spudule
             // Schedule events
             var registry = new Registry();
             for (int i = 0; i < events.Count; i++) {
-                // Add event
-                registry.Schedule(() => {
-                    // Fire embed at hook
-                    var index = i;
-                    var e = embeds[i];
+
+                var e = embeds[i];
+                var t = events[i];
+                registry.Schedule(() => { // Add event
                     hook.SendMessageAsync("", false, new Embed[] { e }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
-                    logger.Info($"Event fired: {events[i].Item1} {events[i].Item2} {events[i].Item3}");
+                    logger.Info($"Event fired: {t.Item1} {t.Item2} {t.Item3}");
 
                 }).ToRunEvery(1).Days().At(Convert.ToInt32(events[i].Item1.Split(':')[0]), Convert.ToInt32(events[i].Item1.Split(':')[1]));
                 logger.Debug($"Added event: {events[i].Item1} {events[i].Item2} {events[i].Item3}");
