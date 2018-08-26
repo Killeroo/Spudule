@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
+
 using Discord;
 using Discord.Webhook;
+
 using FluentScheduler;
 
 namespace Spudule
@@ -65,13 +67,29 @@ namespace Spudule
 
                 var e = embeds[i];
                 var t = events[i];
-                registry.Schedule(() => { // Add event
-                    hook.SendMessageAsync("", false, new Embed[] { e }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
-                    logger.Info($"Event fired: {t.Item1} {t.Item2} {t.Item3}");
+                var time = events[i].Item1.Split(':');
 
-                }).ToRunEvery(1).Days().At(Convert.ToInt32(events[i].Item1.Split(':')[0]), Convert.ToInt32(events[i].Item1.Split(':')[1]));
+                // (Hacky)
+                if (time.Length == 3) { // If there is a day in the time code 
+                    // Try convert to dayofweek enum
+                    Enum.TryParse(time[0], out DayOfWeek day);
+
+                    registry.Schedule(() => { // Add event
+                        hook.SendMessageAsync("", false, new Embed[] { e }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
+                        logger.Info($"Event fired: {t.Item1} {t.Item2} {t.Item3}");
+
+                    }).ToRunEvery(1).Weeks().On(day).At(Convert.ToInt32(time[1]), Convert.ToInt32(time[2]));
+                } else {
+                    registry.Schedule(() => { // Add event
+                        hook.SendMessageAsync("", false, new Embed[] { e }, "Spudule", "http://www.dutchdc.com/wp-content/uploads/2016/12/Potato_shadow.png");
+                        logger.Info($"Event fired: {t.Item1} {t.Item2} {t.Item3}");
+
+                    }).ToRunEvery(1).Days().At(Convert.ToInt32(events[i].Item1.Split(':')[0]), Convert.ToInt32(events[i].Item1.Split(':')[1]));
+                }
+
                 logger.Debug($"Added event: {events[i].Item1} {events[i].Item2} {events[i].Item3}");
             }
+
             JobManager.Initialize(registry);
             logger.Info("Events scheduled");
 
