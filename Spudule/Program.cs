@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -99,8 +100,11 @@ namespace Spudule
             JobManager.Initialize(registry);
             logger.Info("Events scheduled");
 
-            logger.Info("Scheduler running. Press any key to quit... ");
-            Console.ReadLine();
+            logger.Info("Scheduler running. Press Control-C to quit... ");
+
+            // Hack to keep the program running
+            while (true)
+                Thread.Sleep(1000);
 
         }
 
