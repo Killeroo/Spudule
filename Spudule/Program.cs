@@ -22,11 +22,17 @@ namespace Spudule
         private static Logger logger = new Logger();
         private static ulong id = 0;
         private static string token;
+        private static string configPath = "config.txt";
 
         static void Main(string[] args)
         {
+            // Load config path from argument if there are any
+            if (args.Length > 0) {
+                configPath = args[0];
+            }
+
             // Try read config file and load values
-            events = ReadConfigFile("config.txt");
+            events = ReadConfigFile(configPath);
 
             // Sanity check some values
             if (String.IsNullOrEmpty(token) || id == 0 || events.Count == 0) {
@@ -101,6 +107,7 @@ namespace Spudule
         private static List<Tuple<string, string, string>> ReadConfigFile(string path)
         {
             List<Tuple<string, string, string>> events = new List<Tuple<string, string, string>>();
+            logger.Info($"Reading config file @ {configPath}");
 
             try {
                 // Open config file (create if not found)
