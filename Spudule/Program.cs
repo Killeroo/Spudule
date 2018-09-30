@@ -60,7 +60,7 @@ namespace Spudule
             // Setup hook
             hook = new DiscordWebhookClient(id, token);
             logger.Info("Discord Webhook created");
-            
+
             // Schedule events
             var registry = new Registry();
             for (int i = 0; i < events.Count; i++) {
@@ -107,7 +107,7 @@ namespace Spudule
                 var lines = File.ReadAllLines(path);
                 foreach (var line in lines) {
                     var words = line.Split(' ');
-                     
+
                     // Process based on the first word of each line
                     switch (words[0].ToLower()) {
                         case "event": // Format example: event 16:00 killeroo "something here"
@@ -137,7 +137,7 @@ namespace Spudule
                 Environment.Exit(1);
             }
 
-             logger.Info("Config file read");
+            logger.Info("Config file read");
             return events;
         }
 
